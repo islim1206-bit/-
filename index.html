@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>재고관리 (공용)</title>
+<style>
+:root{--bg:#F1F3F0;--card:#fff;--ink:#16222C;--mute:#5E6B75;--line:#CBD2CC;--in:#1F7A55;--out:#C2410C;--warn:#FFE9A8;--bad:#F8C9C9;--ok:#DCEFE4;--c0:#2F6FA9;--c1:#A9772F;--c2:#2A7A57;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141A1F;--card:#1E262D;--ink:#E7ECEF;--mute:#9AA7B0;--line:#34414B;--in:#6CC79B;--out:#F59E6B;--warn:#5A4A12;--bad:#5E2626;--ok:#1D3A2D;--c0:#6FA8DC;--c1:#D9A760;--c2:#6CC79B;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#141A1F;--card:#1E262D;--ink:#E7ECEF;--mute:#9AA7B0;--line:#34414B;--in:#6CC79B;--out:#F59E6B;--warn:#5A4A12;--bad:#5E2626;--ok:#1D3A2D;--c0:#6FA8DC;--c1:#D9A760;--c2:#6CC79B;color-scheme:dark}
+html,body{height:auto}*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Malgun Gothic","Apple SD Gothic Neo",sans-serif;font-size:16px;line-height:1.5}
+header,main{max-width:1000px;margin:0 auto;padding:12px 14px}
+h1{font-size:20px;margin:0 0 8px}h2{font-size:16px;margin:18px 0 8px}
+nav{display:flex;gap:6px}
+nav button{flex:1;padding:12px 6px;font:inherit;font-weight:700;border:2px solid var(--line);background:var(--card);color:var(--mute);border-radius:10px;cursor:pointer}
+nav button[aria-selected=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+input,select{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:6px;padding:8px}
+input[type=number]{width:100%;min-width:64px;text-align:right}
+.btn{font:inherit;font-weight:700;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:9px 14px;cursor:pointer}
+.btn.pri{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn.in.on{background:var(--in);color:#fff;border-color:var(--in)}.btn.out.on{background:var(--out);color:#fff;border-color:var(--out)}
+.big2{font-size:18px;padding:12px 26px}
+.pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.pill{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:18px;padding:5px 14px;cursor:pointer}
+.pill.on{background:var(--ink);color:var(--bg);font-weight:700}
+.sum{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.sum div{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 14px}.sum b{font-size:20px;margin-right:4px}
+.wrap{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;min-width:680px}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:center;vertical-align:middle}
+th{background:var(--bg);font-size:14px}
+td.name{text-align:left;font-weight:700;white-space:nowrap;position:sticky;left:0;background:var(--card);border-left:6px solid var(--cc)}
+td.name small{display:block;font-weight:400;color:var(--mute);font-size:12px}
+.c0{--cc:var(--c0)}.c1{--cc:var(--c1)}.c2{--cc:var(--c2)}
+tr.grp td{background:var(--cc);color:#fff;font-weight:700;text-align:left;padding:4px 10px}
+.big{font-size:18px;font-variant-numeric:tabular-nums}.tot{background:var(--bg)}
+.mv{display:block;font-size:12px}.mv .i{color:var(--in);font-style:normal;font-weight:700}.mv .o{color:var(--out);font-style:normal;font-weight:700}
+.neg{color:var(--out)}.i2{color:var(--in)}.o2{color:var(--out)}.by{font-size:12px;color:var(--mute)}.ci{display:inline-flex;gap:2px}.dsel select{font-weight:700;min-width:200px;border:2px solid var(--ink)}nav button{font-size:14px}
+.chip{display:inline-block;padding:2px 10px;border-radius:12px;font-size:13px;font-weight:700;background:var(--ok);color:var(--ink)}
+.chip.w{background:var(--warn)}.chip.b{background:var(--bad)}
+.tag{padding:2px 8px;border-radius:10px;font-size:13px;font-weight:700;color:#fff}.tag.in{background:var(--in)}.tag.out{background:var(--out)}
+.note{color:var(--mute);font-size:13px;margin:8px 0}.empty{padding:24px;text-align:center;color:var(--mute)}
+td input[type=text]{width:100%;min-width:90px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:20px;opacity:0;pointer-events:none;transition:opacity .2s}.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<header><h1>재고관리</h1><nav id="nav" role="tablist"></nav></header>
+<main id="main"></main>
+<div class="toast" id="toast" role="status"></div>
+<script>
+/* 자체 서버용 연결 모듈: claude.ai 저장소 대신 이 서버의 /api 를 사용합니다 */
+(function(){
+let code=localStorage.getItem('inv_code')||'',name=localStorage.getItem('inv_name')||'';
+const login=()=>{if(!name){name=(prompt('이름을 입력하세요 (입력자 표시에 사용됩니다)')||'').trim()||'이름없음';localStorage.setItem('inv_name',name)}};
+async function api(m,p,b){for(let k=0;k<3;k++){
+  const r=await fetch('/api/'+p,{method:m,headers:{'Content-Type':'application/json','X-Code':code},body:b?JSON.stringify(b):undefined,cache:'no-store'});
+  if(r.status===403){code=prompt('접속 코드를 입력하세요')||'';localStorage.setItem('inv_code',code);continue}
+  if(!r.ok)throw new Error('서버 오류 '+r.status);return r.json()}throw new Error('접속 코드가 맞지 않습니다')}
+let state={},sig='',L=new Set(),timer=null;
+const deliver=l=>{if(l.k==='doc'){const v=state[l.p];l.n({exists:!!v,data:()=>v})}else{const pre=l.p+'/';l.n({docs:Object.keys(state).filter(k=>k.startsWith(pre)).map(k=>({id:k.slice(pre.length),data:()=>state[k]}))})}};
+let ver='';const poll=async()=>{try{const s=await api('GET','state?v='+ver);if(s.d===undefined)return;ver=s.v;const g=JSON.stringify(s.d);if(g!==sig){sig=g;state=s.d;L.forEach(deliver)}}catch(e){L.forEach(l=>l.e&&l.e(e))}};
+const listen=(k,p,n,e)=>{const l={k,p,n,e};L.add(l);if(sig)deliver(l);else poll();if(!timer)timer=setInterval(poll,2500);return()=>L.delete(l)};
+const db={doc:p=>({set:async d=>{await api('PUT','doc/'+encodeURIComponent(p),d);state[p]=JSON.parse(JSON.stringify(d));L.forEach(deliver)},delete:async()=>{await api('DELETE','doc/'+encodeURIComponent(p));delete state[p];L.forEach(deliver)},onSnapshot:(n,e)=>listen('doc',p,n,e)}),
+  collection:c=>({doc:id=>db.doc(c+'/'+(id||'L'+Date.now().toString(36)+Math.random().toString(36).slice(2,8))),onSnapshot:(n,e)=>listen('col',c,n,e)})};
+window.claude={use:async n=>{if(n==='db'){login();return db}if(n==='user'){login();return{id:async()=>name,profiles:async ids=>Object.fromEntries(ids.map(i=>[i,{name:i}]))}}return null}};
+})();
+</script>
+<script>
+const FL0=['멸치','김치','곰탕','청양','우동','기타'],CATS=['원자재','부자재','완제품'];
+const DEF=[['컵','개','부자재'],['뚜껑','개','부자재'],['스프','개','부자재'],['6입 박스','개','부자재'],['15입 박스','개','부자재'],['외카톤 박스','개','부자재'],['기존 6입 박스','개','부자재'],['외카톤 스티커','장','부자재'],['면','박스','원자재'],['완제품','박스','완제품']];
+const fresh=()=>({flavors:FL0.slice(),items:DEF.map((d,i)=>({id:'i'+i,name:d[0],unit:d[1],cat:d[2],safety:0,use:1,open:Array(6).fill(0)}))});
+let S=fresh(),LOG=[],DB=null,DL=null,U=null,UID='';const NAMES={},KEY='inv_shared_v2',clone=x=>JSON.parse(JSON.stringify(x));
+const today=()=>{const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)};
+const shift=(d,k)=>{const x=new Date(d+'T00:00:00Z');x.setUTCDate(x.getUTCDate()+k);return x.toISOString().slice(0,10)};
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const n=v=>(Number(v)||0).toLocaleString('ko-KR'),sum=a=>(a||[]).reduce((x,y)=>x+(+y||0),0),ci=it=>Math.max(0,CATS.indexOf(it.cat));
+const NC=()=>S.flavors.length,VCg=()=>S.flavors.map((_,j)=>j).filter(j=>!(S.fdel||{})[j]),CD=()=>(cd==='all'||tab==='set')?null:S.dests.find(d=>d.id===cd),VC=()=>{const d=CD();return VCg().filter(j=>!(d&&d.hc&&d.hc[j]))},sv=a=>VC().reduce((x,j)=>x+(+(a||[])[j]||0),0);
+let tab='now',vd=today(),ed=today(),et='in',rf=today().slice(0,8)+'01',rt=today(),fc='전체',cd='all',setD=null,editId=null;
+let tt=null;const toast=t=>{const e=document.getElementById('toast');e.textContent=t;e.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>e.classList.remove('show'),2500)};
+function norm(){
+  if(!S||!Array.isArray(S.items)||!S.items.length)S=fresh();
+  if(!Array.isArray(S.flavors)||!S.flavors.length)S.flavors=FL0.slice();if(!S.fdel)S.fdel={};
+  S.items.forEach(it=>{if(!Array.isArray(it.open))it.open=Array(6).fill(0);if(!CATS.includes(it.cat))it.cat='부자재';if(it.use===undefined)it.use=1});
+  if(!Array.isArray(S.dests)||!S.dests.length){S.dests=[{id:'d1',name:'기본 납품처',use:1,open:{}}];S.items.forEach(it=>{if(sum(it.open))S.dests[0].open[it.id]=it.open.slice()});}
+  S.dests.forEach(d=>{if(!d.open)d.open={};if(!d.hc)d.hc={};if(!d.hr)d.hr={}});if(!S.dests.some(d=>d.use!==0))S.dests[0].use=1;
+}
+const actD=()=>S.dests.filter(d=>d.use!==0),dOf=l=>l.dest||S.dests[0].id,dName=id=>(S.dests.find(d=>d.id===id)||{}).name||'(삭제됨)';
+const iOf=id=>S.items.find(i=>i.id===id)||{},nm=id=>id?(NAMES[id]||'입력자'):'';
+const tl=(t,it)=>t==='in'?'입고':(it&&it.cat==='완제품'?'출고':'사용');
+const lsSave=()=>{try{localStorage.setItem(KEY,JSON.stringify({S,LOG}))}catch(e){}};
+async function saveS(){try{if(DB)await DB.doc('app/settings').set(S);else lsSave();toast('저장했습니다')}catch(e){toast('저장하지 못했습니다. 편집 권한을 확인하세요')}}
+async function addRec(r){if(DB)await DB.collection('log').doc().set(r);else{r.id='L'+Date.now()+Math.random().toString(36).slice(2,6);LOG.push(r);lsSave()}}
+async function delRec(id){try{if(DB)await DB.doc('log/'+id).delete();else{LOG=LOG.filter(x=>x.id!==id);lsSave()}toast('삭제했습니다')}catch(e){toast('삭제하지 못했습니다. 편집 권한을 확인하세요')}render()}
+async function resolve(){if(!U)return;const ids=[...new Set(LOG.flatMap(l=>[l.by,l.eb]).filter(x=>x&&!NAMES[x]))];if(!ids.length)return;try{const p=await U.profiles(ids);ids.forEach(i=>{NAMES[i]=(p[i]&&p[i].name)||'입력자'});if(!busy())render()}catch(e){}}
+const busy=()=>tab==='in'||tab==='set'||!!editId;
+async function init(){
+  try{if(typeof claude!=='undefined'){DB=await claude.use('db');DL=await claude.use('downloads');U=await claude.use('user');if(U){try{UID=await U.id()}catch(e){}}}}catch(e){}
+  if(DB){
+    DB.doc('app/settings').onSnapshot(s=>{if(s.exists)S=clone(s.data());norm();if(!busy())render()},()=>toast('설정을 불러오지 못했습니다'));
+    DB.collection('log').onSnapshot(q=>{LOG=q.docs.map(d=>({id:d.id,...clone(d.data())}));resolve();if(!busy())render()},()=>toast('내역을 불러오지 못했습니다'));
+  }else{try{const o=JSON.parse(localStorage.getItem(KEY));if(o&&o.S){S=o.S;LOG=o.LOG||[]}}catch(e){}norm();render()}
+}
+function calc(d,did){const ds=did==='all'?actD():S.dests.filter(x=>x.id===did),ids=new Set(ds.map(x=>x.id)),R={};
+  S.items.forEach(it=>{const c=Array(NC()).fill(0);ds.forEach(x=>(x.open[it.id]||[]).forEach((v,j)=>{c[j]+=+v||0}));R[it.id]={c,i:Array(NC()).fill(0),o:Array(NC()).fill(0)}});
+  LOG.forEach(l=>{const r=R[l.item];if(!r||l.date>d||!ids.has(dOf(l)))return;const s=l.type==='in'?1:-1;(l.q||[]).forEach((q,j)=>{q=+q||0;if(!q)return;r.c[j]+=s*q;if(l.date===d)(s>0?r.i:r.o)[j]+=q})});return R}
+const status=(it,t)=>t<0?['오류','b']:(it.safety>0&&t<it.safety)?['부족','w']:['정상',''];
+const rowOn=it=>{if(tab==='set')return true;if(cd==='all')return actD().some(d=>!(d.hr||{})[it.id]);const d=S.dests.find(x=>x.id===cd);return !(d&&d.hr&&d.hr[it.id])};
+const vis=()=>S.items.filter(it=>it.use&&rowOn(it)&&(fc==='전체'||it.cat===fc));
+const pills=()=>`<div class="pills">${['전체',...CATS].map(k=>`<button class="pill ${fc===k?'on':''}" data-a="fc" data-k="${k}">${k}</button>`).join('')}</div>`;
+function rows(items,fn,cols){let h='',last='';items.forEach(it=>{if(it.cat!==last){last=it.cat;h+=`<tr class="grp c${ci(it)}"><td colspan="${cols}">${esc(it.cat)}</td></tr>`}h+=fn(it)});return h||`<tr><td colspan="${cols}" class="empty">표시할 품목이 없습니다</td></tr>`}
+const nameCell=it=>`<td class="name">${esc(it.name)}<small>${esc(it.unit)}${it.safety?' · 안전재고 '+n(it.safety):''}</small></td>`;
+const thF=()=>VC().map(j=>`<th>${esc(S.flavors[j])}</th>`).join('');
+function dbar(all){const A=actD();if(!all&&(cd==='all'||!A.some(d=>d.id===cd)))cd=A[0].id;if(all&&cd!=='all'&&!A.some(d=>d.id===cd))cd='all';
+  return `<div class="bar"><label class="dsel">납품처 <select id="cd">${all?`<option value="all"${cd==='all'?' selected':''}>전체 납품처 (${A.length})</option>`:''}${A.map(d=>`<option value="${d.id}"${cd===d.id?' selected':''}>${esc(d.name)}</option>`).join('')}</select></label></div>`}
+const dateBar=()=>`<div class="bar"><button class="btn" data-a="d-">‹ 전날</button><input type="date" id="vd" value="${vd}"><button class="btn" data-a="d+">다음날 ›</button><button class="btn" data-a="dt">오늘</button></div>`;
+function vNow(){
+  const R=calc(vd,cd);let low=0,bad=0;
+  const body=rows(vis(),it=>{const r=R[it.id],t=sv(r.c),[st,cl]=status(it,t);if(cl==='w')low++;if(cl==='b')bad++;
+    return `<tr class="c${ci(it)}">${nameCell(it)}${VC().map(j=>{const v=r.c[j];return `<td><b class="big ${v<0?'neg':''}">${n(v)}</b>${r.i[j]||r.o[j]?`<span class="mv">${r.i[j]?`<i class="i">+${n(r.i[j])}</i> `:''}${r.o[j]?`<i class="o">−${n(r.o[j])}</i>`:''}</span>`:''}</td>`}).join('')}<td class="tot"><b class="big ${t<0?'neg':''}">${n(t)}</b></td><td><span class="chip ${cl}">${cl==='w'?'⚠ ':cl==='b'?'✖ ':''}${st}</span></td></tr>`},9);
+  let mx='';const A=actD();
+  if(cd==='all'&&A.length>1){const RD=A.map(d=>calc(vd,d.id));mx=`<h2>납품처별 재고 합계</h2><div class="wrap"><table><thead><tr><th>품목</th>${A.map(d=>`<th>${esc(d.name)}</th>`).join('')}<th>전체</th></tr></thead><tbody>${rows(vis(),it=>`<tr class="c${ci(it)}">${nameCell(it)}${RD.map((r,k)=>{if((A[k].hr||{})[it.id])return '<td>-</td>';const t=sv(r[it.id].c);return `<td><b class="big ${t<0?'neg':''}">${n(t)}</b></td>`}).join('')}<td class="tot"><b class="big">${n(sv(R[it.id].c))}</b></td></tr>`,A.length+2)}</tbody></table></div>`}
+  return `${dateBar()}${pills()}<div class="sum"><div><b>${low}</b>부족 품목</div><div><b style="color:var(--out)">${bad}</b>오류 품목</div></div>
+  <div class="wrap"><table><thead><tr><th>품목</th>${thF()}<th>합계</th><th>상태</th></tr></thead><tbody>${body}</tbody></table></div>
+  <p class="note">굵은 숫자 = ${vd} 마감 재고 · <b style="color:var(--in)">+입고</b> <b style="color:var(--out)">−사용·출고</b>는 당일 변동 · 재고 = 납품처별 기초재고 + 입고 − 사용</p>${mx}`}
+function vFg(){
+  const R=calc(vd,cd),items=S.items.filter(i=>i.use&&i.cat==='완제품'&&rowOn(i));
+  const t=items.map(it=>{const r=R[it.id],pv=r.c.map((v,j)=>v-r.i[j]+r.o[j]);const row=(l,a,c)=>`<tr class="c2"><td class="name">${l}</td>${VC().map(j=>`<td><b class="big ${c||''}">${n(a[j])}</b></td>`).join('')}<td class="tot"><b class="big ${c||''}">${n(sv(a))}</b></td></tr>`;
+    return `<h2>${esc(it.name)} (${esc(it.unit)})</h2><div class="wrap"><table><thead><tr><th></th>${thF()}<th>합계</th></tr></thead><tbody>${row('전일 재고',pv)}${row('당일 입고',r.i,'i2')}${row('당일 출고',r.o,'o2')}${row('마감 재고',r.c)}</tbody></table></div>`}).join('')||'<div class="empty">구분이 "완제품"인 품목이 없습니다. 설정에서 추가하세요.</div>';
+  return `${dateBar()}${t}<div class="bar" style="margin-top:12px"><button class="btn pri big2" data-a="goFg">완제품 입고·출고 입력하기</button></div><p class="note">납품처를 고른 뒤 입력하면 그 납품처 완제품 재고가 바뀝니다.</p>`}
+function vIn(){
+  const body=rows(vis(),it=>`<tr class="c${ci(it)}">${nameCell(it)}${VC().map(j=>`<td><input type="number" min="0" inputmode="numeric" data-i="${it.id}" data-j="${j}"></td>`).join('')}<td><input type="text" data-n="${it.id}" aria-label="비고"></td></tr>`,8);
+  return `${dbar(false)}<div class="bar"><button class="btn in big2 ${et==='in'?'on':''}" data-a="ti">▼ 입고</button><button class="btn out big2 ${et==='out'?'on':''}" data-a="to">▲ 사용·출고</button><input type="date" id="ed" value="${ed}"></div>${pills()}
+  <div class="wrap"><table><thead><tr><th>품목</th>${thF()}<th>비고</th></tr></thead><tbody>${body}</tbody></table></div>
+  <div class="bar" style="margin-top:10px"><button class="btn pri big2" data-a="save">${esc(dName(cd))} · ${et==='in'?'입고':'사용·출고'} 저장</button></div>
+  <p class="note">수량을 적은 칸만 저장됩니다. 사용·출고도 양수로 입력하세요. 입력한 사람 이름이 내역에 함께 기록됩니다.</p>
+  <h2>${ed} · ${esc(dName(cd))} 입력 내역</h2>${recTable(LOG.filter(l=>l.date===ed&&dOf(l)===cd),true)}`}
+function recTable(L,sh){
+  if(!L.length)return `<div class="wrap"><div class="empty">내역이 없습니다</div></div>`;
+  const rw=l=>{const it=iOf(l.item);
+    if(editId===l.id)return `<tr>${sh?'':`<td>${l.date}</td>`}<td>${esc(dName(dOf(l)))}</td><td><span class="tag ${l.type}">${tl(l.type,it)}</span></td><td style="text-align:left;font-weight:700">${esc(it.name||'(삭제됨)')}</td>${VC().map(j=>`<td><input type="number" min="0" data-eq="${j}" value="${(l.q||[])[j]||''}"></td>`).join('')}<td><input type="text" data-en value="${esc(l.note)}"></td><td></td><td><button class="btn pri" data-a="esave">저장</button> <button class="btn" data-a="ecancel">취소</button></td></tr>`;
+    return `<tr>${sh?'':`<td>${l.date}</td>`}<td>${esc(dName(dOf(l)))}</td><td><span class="tag ${l.type}">${tl(l.type,it)}</span></td><td style="text-align:left;font-weight:700">${esc(it.name||'(삭제된 품목)')}</td>${VC().map(j=>`<td>${(l.q||[])[j]?n(l.q[j]):''}</td>`).join('')}<td style="text-align:left">${esc(l.note)}</td><td><b>${esc(nm(l.by)||'-')}</b>${l.eb?`<span class="by"><br>수정: ${esc(nm(l.eb))}</span>`:''}</td><td><button class="btn" data-a="edit" data-id="${l.id}">수정</button> <button class="btn" data-a="del" data-id="${l.id}">삭제</button></td></tr>`};
+  return `<div class="wrap"><table style="min-width:900px"><thead><tr>${sh?'':'<th>날짜</th>'}<th>납품처</th><th>구분</th><th>품목</th>${thF()}<th>비고</th><th>입력자</th><th></th></tr></thead><tbody>${[...L].sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:(a.ts||0)-(b.ts||0)).map(rw).join('')}</tbody></table></div>`}
+const inScope=l=>cd==='all'?actD().some(d=>d.id===dOf(l)):dOf(l)===cd;
+function vLog(){
+  const a=rf<=rt?rf:rt,b=rf<=rt?rt:rf,L=LOG.filter(l=>l.date>=a&&l.date<=b&&inScope(l));
+  const T=S.items.filter(it=>it.use&&rowOn(it)).map(it=>{let i=0,o=0;L.forEach(l=>{if(l.item===it.id){const s=sv(l.q);l.type==='in'?i+=s:o+=s}});return{it,i,o}}).filter(x=>x.i||x.o);
+  return `<div class="bar"><input type="date" id="rf" value="${rf}"><span>~</span><input type="date" id="rt" value="${rt}"></div>
+  <div class="bar"><button class="pill" data-a="r-day">오늘</button><button class="pill" data-a="r-week">이번 주</button><button class="pill" data-a="r-month">이번 달</button><button class="btn" data-a="csv">CSV 저장</button></div>
+  <h2>기간 합계 (${a} ~ ${b})</h2>
+  <div class="wrap"><table style="min-width:420px"><thead><tr><th>품목</th><th>입고</th><th>사용·출고</th><th>순증감</th></tr></thead><tbody>${T.length?T.map(x=>`<tr class="c${ci(x.it)}">${nameCell(x.it)}<td style="color:var(--in)"><b>${n(x.i)}</b></td><td style="color:var(--out)"><b>${n(x.o)}</b></td><td><b>${n(x.i-x.o)}</b></td></tr>`).join(''):'<tr><td colspan="4" class="empty">해당 기간 기록이 없습니다</td></tr>'}</tbody></table></div>
+  <h2>상세 내역 (${L.length}건)</h2>${recTable(L,false)}`}
+function vSet(){
+  if(!S.dests.some(d=>d.id===setD))setD=S.dests[0].id;const sd=S.dests.find(d=>d.id===setD);
+  const dr=S.dests.map((d,i)=>`<tr><td><input type="checkbox" data-d="${i}-use" ${d.use!==0?'checked':''} aria-label="사용"></td><td><input type="text" data-d="${i}-name" value="${esc(d.name)}"></td></tr>`).join('');
+  const r=S.items.map((it,i)=>`<tr class="c${ci(it)}" style="${it.use?'':'opacity:.55'}"><td><input type="checkbox" data-s="${i}-use" ${it.use?'checked':''} aria-label="사용"></td><td><input type="text" data-s="${i}-name" value="${esc(it.name)}"></td><td><select data-s="${i}-cat">${CATS.map(c=>`<option${c===it.cat?' selected':''}>${c}</option>`).join('')}</select></td><td><input type="text" data-s="${i}-unit" value="${esc(it.unit)}" style="min-width:50px"></td><td><input type="number" min="0" data-s="${i}-safety" value="${it.safety||''}"></td><td><button class="btn" data-a="delI" data-i="${i}">삭제</button></td></tr>`).join('');
+  const cs=VCg().filter(j=>!sd.hc[j]),thO=cs.map(j=>`<th>${esc(S.flavors[j])}</th>`).join('');
+  const op=S.items.map((it,i)=>it.use&&!sd.hr[it.id]?`<tr class="c${ci(it)}">${nameCell(it)}${cs.map(j=>`<td><input type="number" data-o="${i}-${j}" value="${(sd.open[it.id]||[])[j]||''}"></td>`).join('')}</tr>`:'').join('');
+  return `<h2 style="margin-top:0">1. 납품처</h2><div class="wrap"><table style="min-width:360px"><thead><tr><th>사용</th><th>납품처명</th></tr></thead><tbody>${dr}</tbody></table></div>
+  <div class="bar" style="margin-top:8px"><button class="btn" data-a="addD">+ 납품처 추가</button></div>
+  <h2>2. 열 이름 (추가·수정·삭제)</h2><div class="bar">${VC().map(j=>`<span class="ci"><input type="text" data-f="${j}" value="${esc(S.flavors[j])}" style="width:100px" aria-label="열 이름"><button class="btn" data-a="delF" data-j="${j}" aria-label="열 삭제">✕</button></span>`).join('')}<button class="btn" data-a="addF">+ 열 추가</button></div><p class="note">열을 삭제하면 그 열의 기록은 화면과 합계에서 빠집니다.</p>
+  <h2>3. 품목 · 구분 · 안전재고</h2><div class="wrap"><table style="min-width:560px"><thead><tr><th>사용</th><th>품목명</th><th>구분</th><th>단위</th><th>안전재고(합계)</th><th></th></tr></thead><tbody>${r}</tbody></table></div>
+  <div class="bar" style="margin-top:8px"><button class="btn" data-a="add">+ 품목 추가</button></div>
+  <h2>4. 납품처별 사용 행·열 선택 · 기초재고</h2><div class="bar"><label class="dsel">납품처 <select id="sds">${S.dests.map(d=>`<option value="${d.id}"${d.id===setD?' selected':''}>${esc(d.name)}</option>`).join('')}</select></label></div>
+  <h3 style="font-size:14px;margin:8px 0 6px">이 납품처에서 사용할 열</h3><div class="bar">${VCg().map(j=>`<label class="pill"><input type="checkbox" data-hc="${j}" ${sd.hc[j]?'':'checked'}> ${esc(S.flavors[j])}</label>`).join('')}</div>
+  <h3 style="font-size:14px;margin:8px 0 6px">이 납품처에서 사용할 행(품목)</h3><div class="bar">${S.items.map(it=>it.use?`<label class="pill"><input type="checkbox" data-hr="${it.id}" ${sd.hr[it.id]?'':'checked'}> ${esc(it.name)}</label>`:'').join('')}<button class="btn" data-a="selAll">모두 선택</button></div>
+  <h3 style="font-size:14px;margin:8px 0 6px">기초재고 (선택한 행·열만 표시)</h3><div class="wrap"><table><thead><tr><th>품목</th>${thO}</tr></thead><tbody>${op}</tbody></table></div>
+  <p class="note">체크를 끄면 그 납품처의 현황·입력·내역 화면에서 해당 행·열이 숨겨집니다(기록은 보존). 아래는 선택한 납품처의 시작 재고입니다. 납품처를 바꾸기 전에 [설정 저장]을 누르세요. 사용을 끄면 기록은 남기고 화면에서만 숨깁니다.</p>
+  <div class="bar"><button class="btn pri big2" data-a="saveSet">설정 저장</button></div>`}
+function readSet(){document.querySelectorAll('[data-f]').forEach(x=>{S.flavors[+x.dataset.f]=x.value.trim()||S.flavors[+x.dataset.f]});
+  document.querySelectorAll('[data-d]').forEach(x=>{const[i,k]=x.dataset.d.split('-'),d=S.dests[i];if(d)d[k]=k==='use'?(x.checked?1:0):(x.value.trim()||d.name)});
+  document.querySelectorAll('[data-s]').forEach(x=>{const[i,k]=x.dataset.s.split('-'),it=S.items[i];if(it)it[k]=k==='use'?(x.checked?1:0):k==='safety'?(Number(x.value)||0):x.value.trim()});
+  const sd=S.dests.find(d=>d.id===setD);if(sd)document.querySelectorAll('[data-o]').forEach(x=>{const[i,j]=x.dataset.o.split('-'),id=S.items[i].id;(sd.open[id]=sd.open[id]||Array(NC()).fill(0))[j]=Number(x.value)||0});
+  {const d=S.dests.find(x=>x.id===setD),hc=document.querySelectorAll('[data-hc]'),hr=document.querySelectorAll('[data-hr]');
+   if(d&&hc.length){d.hc={};hc.forEach(x=>{if(!x.checked)d.hc[x.dataset.hc]=1});if(!VCg().some(j=>!d.hc[j]))d.hc={}}
+   if(d&&hr.length){d.hr={};hr.forEach(x=>{if(!x.checked)d.hr[x.dataset.hr]=1})}}
+  if(!S.dests.some(d=>d.use!==0))S.dests[0].use=1}
+const TABS=[['now','현황'],['fg','완제품'],['in','입력'],['log','내역'],['set','설정']];
+function render(){document.getElementById('nav').innerHTML=TABS.map(t=>`<button role="tab" aria-selected="${tab===t[0]}" data-t="${t[0]}">${t[1]}</button>`).join('');
+  try{norm();const v={now:vNow,fg:vFg,in:vIn,log:vLog,set:vSet}[tab]();document.getElementById('main').innerHTML=(tab==='now'||tab==='fg'||tab==='log'?dbar(true):'')+v}catch(e){document.getElementById('main').innerHTML='<div class="empty">화면을 표시하지 못했습니다. 새로고침해 주세요.</div>';console.error(e)}}
+document.getElementById('nav').onclick=e=>{const b=e.target.closest('button[data-t]');if(b){if(tab==='set')readSet();tab=b.dataset.t;editId=null;render();window.scrollTo(0,0)}};
+document.getElementById('main').addEventListener('change',e=>{const t=e.target;
+  if(t.id==='vd'&&t.value){vd=t.value;render()}else if(t.id==='ed'&&t.value){ed=t.value;render()}
+  else if(t.id==='rf'&&t.value){rf=t.value;render()}else if(t.id==='rt'&&t.value){rt=t.value;render()}
+  else if(t.id==='cd'){cd=t.value;editId=null;render()}else if(t.id==='sds'){readSet();setD=t.value;render()}
+  else if(t.dataset&&(t.dataset.hc!==undefined||t.dataset.hr!==undefined)){readSet();render()}
+  else if(t.dataset.s&&t.dataset.s.endsWith('-use'))t.closest('tr').style.opacity=t.checked?'':'.55'});
+async function csv(){const a=rf<=rt?rf:rt,b=rf<=rt?rt:rf,q=s=>'"'+String(s??'').replace(/"/g,'""')+'"';
+  const rws=[['날짜','납품처','구분','품목',...VC().map(j=>S.flavors[j]),'비고','입력자','수정자']].concat(LOG.filter(l=>l.date>=a&&l.date<=b&&inScope(l)).sort((x,y)=>x.date<y.date?-1:1).map(l=>{const it=iOf(l.item);return[l.date,dName(dOf(l)),tl(l.type,it),it.name||'',...VC().map(j=>(l.q||[])[j]||''),l.note,nm(l.by),nm(l.eb)]}));
+  const data='\ufeff'+rws.map(r=>r.map(q).join(',')).join('\r\n'),filename=`재고_입출고_${a}_${b}.csv`;
+  try{if(DL)await DL.save({filename,data});else{const x=document.createElement('a');x.href=URL.createObjectURL(new Blob([data],{type:'text/csv'}));x.download=filename;document.body.appendChild(x);x.click();x.remove()}toast('저장했습니다')}catch(e){toast('저장을 취소했거나 실패했습니다')}}
+async function esave(){const rec=LOG.find(l=>l.id===editId);if(!rec){editId=null;render();return}
+  const q=S.flavors.map((_,j)=>{const x=document.querySelector(`[data-eq="${j}"]`);return x?Math.max(0,Number(x.value)||0):((rec.q||[])[j]||0)});if(!sv(q)){toast('수량을 입력하세요');return}
+  const note=(document.querySelector('[data-en]')||{value:''}).value.trim(),full={...rec,q,note,eb:UID};delete full.id;
+  try{if(DB)await DB.doc('log/'+rec.id).set(full);else{Object.assign(rec,{q,note,eb:UID});lsSave()}toast('수정했습니다')}catch(e){toast('수정하지 못했습니다. 편집 권한을 확인하세요');return}editId=null;render()}
+document.getElementById('main').addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;const a=b.dataset.a;
+  if(a==='fc'){fc=b.dataset.k;render()}else if(a==='d-'){vd=shift(vd,-1);render()}else if(a==='d+'){vd=shift(vd,1);render()}else if(a==='dt'){vd=today();render()}
+  else if(a==='ti'||a==='to'){et=a==='ti'?'in':'out';render()}
+  else if(a==='goFg'){tab='in';fc='완제품';render();window.scrollTo(0,0)}
+  else if(a==='save'){const ents=[];S.items.forEach(it=>{const q=S.flavors.map((_,j)=>{const x=document.querySelector(`[data-i="${it.id}"][data-j="${j}"]`);return Math.max(0,Number(x&&x.value)||0)});if(!sum(q))return;const nt=document.querySelector(`[data-n="${it.id}"]`);ents.push({date:ed,item:it.id,dest:cd,type:et,q,note:nt?nt.value.trim():'',by:UID,ts:Date.now()})});
+    if(!ents.length){toast('입력한 수량이 없습니다');return}
+    try{for(const r of ents)await addRec(r);toast(`${ents.length}개 품목 저장 (${dName(cd)})`)}catch(x){toast('저장하지 못했습니다. 편집 권한을 확인하세요');return}render()}
+  else if(a==='edit'){editId=b.dataset.id;render()}else if(a==='ecancel'){editId=null;render()}else if(a==='esave')esave();
+  else if(a==='del'){if(b.dataset.c!=='1'){b.dataset.c='1';b.textContent='정말 삭제?';setTimeout(()=>{b.dataset.c='';b.textContent='삭제'},4000);return}delRec(b.dataset.id)}
+  else if(a==='r-day'){rf=rt=today();render()}else if(a==='r-week'){const d=new Date(today()+'T00:00:00Z');rf=shift(today(),-((d.getUTCDay()+6)%7));rt=today();render()}else if(a==='r-month'){rf=today().slice(0,8)+'01';rt=today();render()}
+  else if(a==='csv')csv();
+  else if(a==='saveSet'){readSet();await saveS();render()}
+  else if(a==='add'){readSet();S.items.push({id:'i'+Date.now().toString(36),name:'새 품목',unit:'개',cat:'원자재',safety:0,use:1,open:Array(NC()).fill(0)});await saveS();render()}
+  else if(a==='addF'){readSet();if(S.flavors.length>=20){toast('열은 최대 20개입니다');return}S.flavors.push('새 열');await saveS();render()}
+  else if(a==='delF'){if(VC().length<=1){toast('열은 최소 1개가 필요합니다');return}if(b.dataset.c!=='1'){b.dataset.c='1';b.textContent='삭제?';setTimeout(()=>{b.dataset.c='';b.textContent='✕'},4000);return}readSet();S.fdel[+b.dataset.j]=1;await saveS();render()}
+  else if(a==='delI'){if(S.items.length<=1){toast('품목은 최소 1개가 필요합니다');return}if(b.dataset.c!=='1'){b.dataset.c='1';b.textContent='정말?';setTimeout(()=>{b.dataset.c='';b.textContent='삭제'},4000);return}readSet();S.items.splice(+b.dataset.i,1);await saveS();render()}
+  else if(a==='selAll'){readSet();const d=S.dests.find(x=>x.id===setD);if(d){d.hc={};d.hr={}}render()}
+  else if(a==='addD'){readSet();if(S.dests.length>=20){toast('납품처는 최대 20개입니다');return}const d={id:'d'+Date.now().toString(36),name:'새 납품처',use:1,open:{}};S.dests.push(d);setD=d.id;await saveS();render()}});
+render();init();
+</script>
+</body>
+</html>
